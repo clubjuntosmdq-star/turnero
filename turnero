@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Juntos - Sistema Avanzado</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .navbar-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            overflow-x: auto;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 12px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .module {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            animation: fadeIn 0.3s;
+        }
+
+        .module.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section-title {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section-subtitle {
+            color: #764ba2;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 20px 0 12px 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #ddd;
+        }
+
+        th {
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            background: #f0f1ff;
+        }
+
+        .file-upload.dragover {
+            border-color: #764ba2;
+            background: #ede9ff;
+        }
+
+        .notification {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .notification-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .notification-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .notification-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .message-template {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .message-template strong {
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-menu {
+                gap: 4px;
+            }
+
+            .nav-btn {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-title">🏥 Club Juntos - Sistema Avanzado</div>
+        <div class="navbar-menu">
+            <button class="nav-btn active" onclick="showModule('dashboard')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="showModule('pacientes')">👥 Pacientes</button>
+            <button class="nav-btn" onclick="showModule('turnos')">📅 Turnos</button>
+            <button class="nav-btn" onclick="showModule('asistencias')">✓ Asistencias</button>
+            <button class="nav-btn" onclick="showModule('historias')">📊 Historias</button>
+            <button class="nav-btn" onclick="showModule('facturacion')">💰 Facturación</button>
+            <button class="nav-btn" onclick="showModule('mensajes')">💬 Mensajes</button>
+            <button class="nav-btn" onclick="showModule('tareas')">✔️ Tareas</button>
+            <button class="nav-btn" onclick="showModule('pagos')">💳 Pagos</button>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR -->
+    <div class="container">
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="module active">
+            <div class="section-title">📊 Dashboard General</div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-pac">0</div>
+                    <div class="stat-label">Pacientes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-turn">0</div>
+                    <div class="stat-label">Turnos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-asi">0</div>
+                    <div class="stat-label">Asistencias</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-pag">$0</div>
+                    <div class="stat-label">Ingresos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-his">0</div>
+                    <div class="stat-label">Historias</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-tar">0</div>
+                    <div class="stat-label">Tareas</div>
+                </div>
+            </div>
+
+            <div class="section-subtitle">⚡ Acciones Rápidas</div>
+            <div class="buttons">
+                <button class="btn-primary" onclick="showModule('pacientes')">➕ Nuevo Paciente</button>
+                <button class="btn-primary" onclick="showModule('turnos')">📅 Agendar Turno</button>
+                <button class="btn-success" onclick="showModule('asistencias')">✓ Registrar Asistencia</button>
+                <button class="btn-warning" onclick="showModule('mensajes')">💬 Enviar Mensaje</button>
+            </div>
+        </div>
+
+        <!-- PACIENTES -->
+        <div id="pacientes" class="module">
+            <div class="section-title">👥 Gestión de Pacientes</div>
+
+            <div class="section-subtitle">Registrar Nuevo Paciente</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="pac-nombre" placeholder="Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label>DNI *</label>
+                    <input type="text" id="pac-dni" placeholder="12345678">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" id="pac-tel" placeholder="223-1234567">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="pac-email" placeholder="paciente@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Obra Social</label>
+                    <select id="pac-os">
+                        <option value="">Seleccionar...</option>
+                        <option value="OSEC">OSEC</option>
+                        <option value="IOMA">IOMA</option>
+                        <option value="Swiss Medical">Swiss Medical</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Afiliado</label>
+                    <input type="text" id="pac-afil" placeholder="123456789">
+                </div>
+            </div>
+            <div class="buttons">
+                <button class="btn-success" onclick="agregarPaciente()">➕ Registrar Paciente</button>
+                <button class="btn-secondary" onclick="limpiarFormPaciente()">Limpiar</button>
+            </div>
+
+            <div class="table-container">
+                <table id="tablaPacientes">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>DNI</th>
+                            <th>Teléfono</th>
+                            <th>Obra Social</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoPacientes">
+                        <tr><td colspan="5" style="text-align: center; color: #999;">No hay pacientes registrados</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TURNOS -->
+        <div id="turnos" class="module">
+            <div class="section-title">📅 Gestión de Turnos</div>
+
+            <div class="section-subtitle">Agendar Nuevo Turno</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Paciente *</label>
+                    <select id="turn-pac">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" id="turn-fecha">
+                </div>
+                <div class="form-group">
+                    <label>Hora *</label>
+                    <input type="time" id="turn-hora">
+                </div>
+                <div class="form-group">
+                    <label>Profesional *</label>
+                    <select id="turn-prof">
+                        <option value="">Seleccionar...</option>
+                        <option value="Celeste">Celeste</option>
+                        <option value="Majo">Majo</option>
+                        <option value="Morena">Morena</option>
+                        <option value="Jesica">Jesica</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Servicio *</label>
+                    <select id="turn-serv">
+                        <option value="">Seleccionar...</option>
+                        <option value="Kinesiología">Kinesiología</option>
+                        <option value="T.O.">Terapista Ocupacional</option>
+                        <option value="Psicología">Psicología</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="turn-est">
+                        <option value="Confirmado">Confirmado</option>
+                        <option value="Pendiente">Pendiente</option>
+                    </select>
+                </div>
+            </div>
+            <div class="buttons">
+                <button class="btn-success" onclick="agregarTurno()">📅 Agendar Turno</button>
+                <button class="btn-secondary" onclick="limpiarFormTurno()">Limpiar</button>
+            </div>
+
+            <div class="table-container">
+                <table id="tablaTurnos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Paciente</th>
+                            <th>Profesional</th>
+                            <th>Servicio</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTurnos">
+                        <tr><td colspan="7" style="text-align: center; color: #999;">No hay turnos agendados</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ASISTENCIAS -->
+        <div id="asistencias" class="module">
+            <div class="section-title">✓ Registro de Asistencias</div>
+
+            <div class="section-subtitle">Registrar Asistencia</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Paciente *</label>
+                    <select id="asi-pac" onchange="cargarTurnosAsistencia()">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" id="asi-fecha">
+                </div>
+                <div class="form-group">
+                    <label>Duración (min)</label>
+                    <input type="number" id="asi-dur" value="45" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Estado *</label>
+                    <select id="asi-est">
+                        <option value="Presente">Presente</option>
+                        <option value="Ausente">Ausente</option>
+                        <option value="Justificado">Ausente Justificado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notas Clínicas</label>
+                <textarea id="asi-notas" placeholder="Observaciones de la sesión..."></textarea>
+            </div>
+            <div class="buttons">
+                <button class="btn-success" onclick="agregarAsistencia()">✓ Registrar Asistencia</button>
+                <button class="btn-secondary" onclick="limpiarFormAsistencia()">Limpiar</button>
+            </div>
+
+            <div class="table-container">
+                <table id="tablaAsistencias">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>Duración</th>
+                            <th>Estado</th>
+                            <th>Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoAsistencias">
+                        <tr><td colspan="5" style="text-align: center; color: #999;">No hay asistencias registradas</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- HISTORIAS CLÍNICAS -->
+        <div id="historias" class="module">
+            <div class="section-title">📊 Historias Clínicas</div>
+
+            <div class="section-subtitle">Crear/Actualizar Historia Clínica</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Paciente *</label>
+                    <select id="his-pac">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Profesional *</label>
+                    <select id="his-prof">
+                        <option value="">Seleccionar...</option>
+                        <option value="Celeste">Celeste</option>
+                        <option value="Majo">Majo</option>
+                        <option value="Morena">Morena</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Diagnóstico</label>
+                <textarea id="his-diag" placeholder="Diagnóstico e historial médico..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Evaluación Inicial</label>
+                <textarea id="his-eval" placeholder="Hallazgos de la evaluación..."></textarea>
+            </div>
+            <div class="buttons">
+                <button class="btn-success" onclick="agregarHistoria()">📊 Guardar Historia</button>
+                <button class="btn-secondary" onclick="limpiarFormHistoria()">Limpiar</button>
+            </div>
+
+            <div class="section-subtitle">Subir Documento PDF/Word</div>
+            <div class="file-upload" id="fileUpload" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx" onchange="handleFileSelect(event)">
+                <p style="margin: 0; color: #667eea; cursor: pointer;" onclick="document.getElementById('fileInput').click();">
+                    📁 Arrastra aquí o haz clic para subir archivo<br>
+                    <span style="font-size: 11px; color: #999;">PDF, Word (.doc, .docx)</span>
+                </p>
+            </div>
+            <div id="fileMensaje" style="margin-top: 10px;"></div>
+
+            <div class="section-subtitle">Historias Clínicas</div>
+            <div class="table-container">
+                <table id="tablaHistorias">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Profesional</th>
+                            <th>Fecha</th>
+                            <th>Archivo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoHistorias">
+                        <tr><td colspan="5" style="text-align: center; color: #999;">No hay historias clínicas</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FACTURACIÓN -->
+        <div id="facturacion" class="module">
+            <div class="section-title">💰 Facturación</div>
+
+            <div class="section-subtitle">Crear Factura</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Período *</label>
+                    <input type="month" id="fact-per">
+                </div>
+                <div class="form-group">
+                    <label>Paciente *</label>
+                    <select id="fact-pac">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sesiones</label>
+                    <input type="number" id="fact-ses" value="0" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Valor Sesión ($) *</label>
+                    <input type="number" id="fact-val" value="500" min="0" step="0.01" onchange="calcularTotal()">
+                </div>
+                <div class="form-group">
+                    <label>Total ($)</label>
+                    <input type="number" id="fact-tot" readonly style="font-weight: bold;">
+                </div>
+            </div>
+            <div class="buttons">
+                <button class="btn-success" onclick="agregarFactura()">💾 Crear Factura</button>
+                <button class="btn-secondary" onclick="limpiarFormFactura()">Limpiar</button>
+            </div>
+
+            <div class="table-container">
+                <table id="tablaFacturas">
+                    <thead>
+                        <tr>
+                            <th>Período</th>
+                            <th>Paciente</th>
+                            <th>Sesiones</th>
+                            <th>Total ($)</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoFacturas">
+                        <tr><td colspan="6" style="text-align: center; color: #999;">No hay facturas</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MENSAJES WHATSAPP -->
+        <div id="mensajes" class="module">
+            <div class="section-title">💬 Mensajes WhatsApp Automáticos</div>
+
+            <div class="section-subtitle">Plantillas de Mensajes</div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                <div class="message-template">
+                    <strong>📅 Recordatorio de Turno:</strong><br>
+                    "Hola {{nombre}}, recordamos tu turno para mañana {{fecha}} a las {{hora}} con {{profesional}}. Por favor confirma tu asistencia. ¡Gracias!"
+                </div>
+                <div class="message-template">
+                    <strong>✓ Confirmación de Asistencia:</strong><br>
+                    "Hola {{nombre}}, confirmamos tu asistencia a la sesión de {{fecha}}. Próxima cita: {{proxima}}. ¡Hasta pronto!"
+                </div>
+                <div class="message-template">
+                    <strong>❌ Notificación de Cancelación:</strong><br>
+                    "Hola {{nombre}}, tu turno para {{fecha}} ha sido cancelado. Por favor, contáctanos para reprogramar. Disponibles: {{fechas_disponibles}}"
+                </div>
+                <div class="message-template">
+                    <strong>📋 Tarea Asignada:</strong><br>
+                    "Hola {{nombre}}, se te ha asignado la siguiente tarea: {{tarea}}. Duración: {{duracion}} minutos diarios. ¡Mucho éxito!"
+                </div>
+            </div>
+
+            <div class="section-subtitle">Enviar Mensaje Personalizado</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Paciente *</label>
+                    <select id="msg-pac">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Mensaje *</label>
+                    <select id="msg-tipo">
+                        <option value="">Seleccionar...</option>
+                        <option value="recordatorio">📅 Recordatorio de Turno</option>
+                        <option value="confirmacion">✓ Confirmación</option>
+                        <option value="cancelacion">❌ Cancelación</option>
+                        <option value="tarea">📋 Tarea</option>
+                        <option value="personalizado">💬 Personalizado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Mensaje</label>
+                <textarea id="msg-texto" placeholder="Escribe el mensaje o usa {{variables}}..."></textarea>
+            </div>
+            <div class="buttons">
+                <button class="btn-success" onclick="enviarMensaje()">💬 Enviar por WhatsApp</button>
+                <button class="btn-primary" onclick="enviarEmail()">📧 Enviar por Email</button>
+                <button class="btn-secondary" onclick="limpiarFormMensaje()">Limpiar</button>
+            </div>
+
+            <div class="section-subtitle">Mensajes Enviados</div>
+            <div class="table-container">
+                <table id="tablaMensajes">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>Tipo</th>
+                            <th>Canal</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoMensajes">
+                        <tr><td colspan="5" style="text-align: center; color: #999;">No hay mensajes enviados</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAREAS/EJERCICIOS -->
+        <div id="tareas" class="module">
+            <div class="section-title">✔️ Tareas y Ejercicios para Pacientes</div>
+
+            <div class="section-subtitle">Asignar Nueva Tarea</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Paciente *</label>
+                    <select id="tarea-pac">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo *</label>
+                    <select id="tarea-tipo">
+                        <option value="">Seleccionar...</option>
+                        <option value="Ejercicio">Ejercicio</option>
+                        <option value="Tarea">Tarea</option>
+                        <option value="Lectura">Lectura</option>
+                        <option value="Video">Mirar Video</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duración (min/día)</label>
+                    <input type="number" id="tarea-dur" value="15" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Frecuencia</label>
+                    <select id="tarea-freq">
+                        <option value="Diaria">Diaria</option>
+                        <option value="3x/semana">3 veces por semana</option>
+                        <option value="2x/semana">2 veces por semana</option>
+                        <option value="Semanal">Semanal</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descripción *</label>
+                <textarea id="tarea-desc" placeholder="Descripción detallada de la tarea..."></textarea>
+            </div>
+            <div class="buttons">
+                <button class="btn-success" onclick="agregarTarea()">✔️ Asignar Tarea</button>
+                <button class="btn-secondary" onclick="limpiarFormTarea()">Limpiar</button>
+            </div>
+
+            <div class="table-container">
+                <table id="tablaTareas">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Frecuencia</th>
+                            <th>Fecha Asignación</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTareas">
+                        <tr><td colspan="6" style="text-align: center; color: #999;">No hay tareas asignadas</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PAGOS -->
+        <div id="pagos" class="module">
+            <div class="section-title">💳 Seguimiento de Pagos</div>
+
+            <div class="section-subtitle">Registrar Pago</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Paciente *</label>
+                    <select id="pago-pac">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monto ($) *</label>
+                    <input type="number" id="pago-monto" min="0" step="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" id="pago-fecha">
+                </div>
+                <div class="form-group">
+                    <label>Método *</label>
+                    <select id="pago-metodo">
+                        <option value="">Seleccionar...</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Cheque">Cheque</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Observaciones</label>
+                <textarea id="pago-obs" placeholder="Notas sobre el pago..."></textarea>
+            </div>
+            <div class="buttons">
+                <button class="btn-success" onclick="agregarPago()">💳 Registrar Pago</button>
+                <button class="btn-secondary" onclick="limpiarFormPago()">Limpiar</button>
+            </div>
+
+            <div class="table-container">
+                <table id="tablaPagos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>Monto ($)</th>
+                            <th>Método</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoPagos">
+                        <tr><td colspan="5" style="text-align: center; color: #999;">No hay pagos registrados</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pacientes = JSON.parse(localStorage.getItem('pacientes')) || [];
+        let turnos = JSON.parse(localStorage.getItem('turnos')) || [];
+        let asistencias = JSON.parse(localStorage.getItem('asistencias')) || [];
+        let historias = JSON.parse(localStorage.getItem('historias')) || [];
+        let facturas = JSON.parse(localStorage.getItem('facturas')) || [];
+        let mensajes = JSON.parse(localStorage.getItem('mensajes')) || [];
+        let tareas = JSON.parse(localStorage.getItem('tareas')) || [];
+        let pagos = JSON.parse(localStorage.getItem('pagos')) || [];
+
+        // INICIALIZAR
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('turn-fecha').valueAsDate = new Date();
+            document.getElementById('asi-fecha').valueAsDate = new Date();
+            document.getElementById('fact-per').value = new Date().toISOString().slice(0, 7);
+            document.getElementById('pago-fecha').valueAsDate = new Date();
+
+            cargarSelects();
+            actualizarDashboard();
+            actualizarTablas();
+        });
+
+        // FUNCIONES DE NAVEGACIÓN
+        function showModule(name) {
+            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+            document.getElementById(name).classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            actualizarTablas();
+            actualizarDashboard();
+        }
+
+        // CARGAR SELECTS
+        function cargarSelects() {
+            const selects = ['turn-pac', 'asi-pac', 'his-pac', 'fact-pac', 'msg-pac', 'tarea-pac', 'pago-pac'];
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">Seleccionar...</option>';
+                pacientes.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.text = p.nombre;
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        // PACIENTES
+        function agregarPaciente() {
+            const nombre = document.getElementById('pac-nombre').value;
+            const dni = document.getElementById('pac-dni').value;
+            const tel = document.getElementById('pac-tel').value;
+            const email = document.getElementById('pac-email').value;
+            const os = document.getElementById('pac-os').value;
+            const afil = document.getElementById('pac-afil').value;
+
+            if (!nombre || !dni) {
+                alert('Completa nombre y DNI');
+                return;
+            }
+
+            pacientes.push({
+                id: Date.now(),
+                nombre,
+                dni,
+                tel,
+                email,
+                os,
+                afil
+            });
+
+            localStorage.setItem('pacientes', JSON.stringify(pacientes));
+            limpiarFormPaciente();
+            cargarSelects();
+            actualizarTablas();
+            actualizarDashboard();
+            mostrarNotificacion('✓ Paciente registrado', 'success');
+        }
+
+        function limpiarFormPaciente() {
+            document.getElementById('pac-nombre').value = '';
+            document.getElementById('pac-dni').value = '';
+            document.getElementById('pac-tel').value = '';
+            document.getElementById('pac-email').value = '';
+            document.getElementById('pac-os').value = '';
+            document.getElementById('pac-afil').value = '';
+        }
+
+        // TURNOS
+        function agregarTurno() {
+            const pac = document.getElementById('turn-pac').value;
+            const fecha = document.getElementById('turn-fecha').value;
+            const hora = document.getElementById('turn-hora').value;
+            const prof = document.getElementById('turn-prof').value;
+            const serv = document.getElementById('turn-serv').value;
+            const est = document.getElementById('turn-est').value;
+
+            if (!pac || !fecha || !hora || !prof || !serv) {
+                alert('Completa todos los campos obligatorios');
+                return;
+            }
+
+            const paciente = pacientes.find(p => p.id == pac);
+            turnos.push({
+                id: Date.now(),
+                pacienteId: pac,
+                pacienteNombre: paciente.nombre,
+                fecha,
+                hora,
+                profesional: prof,
+                servicio: serv,
+                estado: est
+            });
+
+            localStorage.setItem('turnos', JSON.stringify(turnos));
+            limpiarFormTurno();
+            actualizarTablas();
+            actualizarDashboard();
+            mostrarNotificacion('📅 Turno agendado', 'success');
+        }
+
+        function limpiarFormTurno() {
+            document.getElementById('turn-pac').value = '';
+            document.getElementById('turn-hora').value = '';
+            document.getElementById('turn-prof').value = '';
+            document.getElementById('turn-serv').value = '';
+        }
+
+        // ASISTENCIAS
+        function cargarTurnosAsistencia() {
+            const pacId = document.getElementById('asi-pac').value;
+            if (!pacId) return;
+
+            const turnosPac = turnos.filter(t => t.pacienteId == pacId);
+            if (turnosPac.length > 0) {
+                document.getElementById('asi-fecha').value = turnosPac[0].fecha;
+            }
+        }
+
+        function agregarAsistencia() {
+            const pac = document.getElementById('asi-pac').value;
+            const fecha = document.getElementById('asi-fecha').value;
+            const dur = document.getElementById('asi-dur').value;
+            const est = document.getElementById('asi-est').value;
+            const notas = document.getElementById('asi-notas').value;
+
+            if (!pac || !fecha) {
+                alert('Completa paciente y fecha');
+                return;
+            }
+
+            const paciente = pacientes.find(p => p.id == pac);
+            asistencias.push({
+                id: Date.now(),
+                pacienteId: pac,
+                pacienteNombre: paciente.nombre,
+                fecha,
+                duracion: dur,
+                estado: est,
+                notas
+            });
+
+            localStorage.setItem('asistencias', JSON.stringify(asistencias));
+            limpiarFormAsistencia();
+            actualizarTablas();
+            actualizarDashboard();
+            mostrarNotificacion('✓ Asistencia registrada', 'success');
+        }
+
+        function limpiarFormAsistencia() {
+            document.getElementById('asi-pac').value = '';
+            document.getElementById('asi-dur').value = '45';
+            document.getElementById('asi-est').value = 'Presente';
+            document.getElementById('asi-notas').value = '';
+        }
+
+        // HISTORIAS CLÍNICAS
+        function agregarHistoria() {
+            const pac = document.getElementById('his-pac').value;
+            const prof = document.getElementById('his-prof').value;
+            const diag = document.getElementById('his-diag').value;
+            const eval = document.getElementById('his-eval').value;
+
+            if (!pac || !prof) {
+                alert('Completa paciente y profesional');
+                return;
+            }
+
+            const paciente = pacientes.find(p => p.id == pac);
+            historias.push({
+                id: Date.now(),
+                pacienteId: pac,
+                pacienteNombre: paciente.nombre,
+                profesional: prof,
+                diagnostico: diag,
+                evaluacion: eval,
+                archivo: null,
+                fecha: new Date().toISOString().split('T')[0]
+            });
+
+            localStorage.setItem('historias', JSON.stringify(historias));
+            limpiarFormHistoria();
+            actualizarTablas();
+            actualizarDashboard();
+            mostrarNotificacion('📊 Historia guardada', 'success');
+        }
+
+        function limpiarFormHistoria() {
+            document.getElementById('his-pac').value = '';
+            document.getElementById('his-prof').value = '';
+            document.getElementById('his-diag').value = '';
+            document.getElementById('his-eval').value = '';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('fileUpload').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            document.getElementById('fileUpload').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('fileUpload').classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect({ target: { files } });
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                if (!validTypes.includes(file.type)) {
+                    mostrarNotificacion('❌ Solo PDF o Word', 'warning');
+                    return;
+                }
+
+                document.getElementById('fileMensaje').innerHTML = `<div class="notification notification-success">✓ Archivo: ${file.name} cargado</div>`;
+                // Aquí iría la lógica de guardar el archivo
+            }
+        }
+
+        // FACTURACIÓN
+        function calcularTotal() {
+            const ses = parseInt(document.getElementById('fact-ses').value) || 0;
+            const val = parseFloat(document.getElementById('fact-val').value) || 0;
+            document.getElementById('fact-tot').value = (ses * val).toFixed(2);
+        }
+
+        function agregarFactura() {
+            const per = document.getElementById('fact-per').value;
+            const pac = document.getElementById('fact-pac').value;
+            const val = parseFloat(document.getElementById('fact-val').value);
+            const tot = parseFloat(document.getElementById('fact-tot').value);
+
+            if (!per || !pac || !val) {
+                alert('Completa período, paciente y valor');
+                return;
+            }
+
+            const paciente = pacientes.find(p => p.id == pac);
+            const sesionesDelPeriodo = asistencias.filter(a => a.pacienteId == pac && a.fecha.startsWith(per) && a.estado === 'Presente').length;
+
+            facturas.push({
+                id: Date.now(),
+                pacienteId: pac,
+                pacienteNombre: paciente.nombre,
+                periodo: per,
+                sesiones: sesionesDelPeriodo,
+                valor: val,
+                total: (sesionesDelPeriodo * val).toFixed(2),
+                estado: 'Pendiente'
+            });
+
+            localStorage.setItem('facturas', JSON.stringify(facturas));
+            limpiarFormFactura();
+            actualizarTablas();
+            actualizarDashboard();
+            mostrarNotificacion('💾 Factura creada', 'success');
+        }
+
+        function limpiarFormFactura() {
+            document.getElementById('fact-pac').value = '';
+            document.getElementById('fact-ses').value = '0';
+            document.getElementById('fact-val').value = '500';
+            document.getElementById('fact-tot').value = '';
+        }
+
+        // MENSAJES WHATSAPP
+        function enviarMensaje() {
+            const pac = document.getElementById('msg-pac').value;
+            const tipo = document.getElementById('msg-tipo').value;
+            const texto = document.getElementById('msg-texto').value;
+
+            if (!pac || !tipo || !texto) {
+                alert('Completa todos los campos');
+                return;
+            }
+
+            const paciente = pacientes.find(p => p.id == pac);
+            mensajes.push({
+                id: Date.now(),
+                pacienteId: pac,
+                pacienteNombre: paciente.nombre,
+                tipo,
+                canal: 'WhatsApp',
+                mensaje: texto,
+                fecha: new Date().toISOString().split('T')[0],
+                estado: 'Enviado'
+            });
+
+            localStorage.setItem('mensajes', JSON.stringify(mensajes));
+            limpiarFormMensaje();
+            actualizarTablas();
+            mostrarNotificacion('💬 Mensaje enviado por WhatsApp', 'success');
+        }
+
+        function enviarEmail() {
+            const pac = document.getElementById('msg-pac').value;
+            const tipo = document.getElementById('msg-tipo').value;
+            const texto = document.getElementById('msg-texto').value;
+
+            if (!pac || !tipo || !texto) {
+                alert('Completa todos los campos');
+                return;
+            }
+
+            const paciente = pacientes.find(p => p.id == pac);
+            mensajes.push({
+                id: Date.now(),
+                pacienteId: pac,
+                pacienteNombre: paciente.nombre,
+                tipo,
+                canal: 'Email',
+                mensaje: texto,
+                fecha: new Date().toISOString().split('T')[0],
+                estado: 'Enviado'
+            });
+
+            localStorage.setItem('mensajes', JSON.stringify(mensajes));
+            limpiarFormMensaje();
+            actualizarTablas();
+            mostrarNotificacion('📧 Mensaje enviado por Email', 'success');
+        }
+
+        function limpiarFormMensaje() {
+            document.getElementById('msg-pac').value = '';
+            document.getElementById('msg-tipo').value = '';
+            document.getElementById('msg-texto').value = '';
+        }
+
+        // TAREAS
+        function agregarTarea() {
+            const pac = document.getElementById('tarea-pac').value;
+            const tipo = document.getElementById('tarea-tipo').value;
+            const desc = document.getElementById('tarea-desc').value;
+            const dur = document.getElementById('tarea-dur').value;
+            const freq = document.getElementById('tarea-freq').value;
+
+            if (!pac || !tipo || !desc) {
+                alert('Completa todos los campos obligatorios');
+                return;
+            }
+
+            const paciente = pacientes.find(p => p.id == pac);
+            tareas.push({
+                id: Date.now(),
+                pacienteId: pac,
+                pacienteNombre: paciente.nombre,
+                tipo,
+                descripcion: desc,
+                duracion: dur,
+                frecuencia: freq,
+                fecha: new Date().toISOString().split('T')[0],
+                estado: 'Activa'
+            });
+
+            localStorage.setItem('tareas', JSON.stringify(tareas));
+            limpiarFormTarea();
+            actualizarTablas();
+            actualizarDashboard();
+            mostrarNotificacion('✔️ Tarea asignada', 'success');
+        }
+
+        function limpiarFormTarea() {
+            document.getElementById('tarea-pac').value = '';
+            document.getElementById('tarea-tipo').value = '';
+            document.getElementById('tarea-desc').value = '';
+            document.getElementById('tarea-dur').value = '15';
+            document.getElementById('tarea-freq').value = 'Diaria';
+        }
+
+        // PAGOS
+        function agregarPago() {
+            const pac = document.getElementById('pago-pac').value;
+            const monto = parseFloat(document.getElementById('pago-monto').value);
+            const fecha = document.getElementById('pago-fecha').value;
+            const metodo = document.getElementById('pago-metodo').value;
+            const obs = document.getElementById('pago-obs').value;
+
+            if (!pac || !monto || !fecha || !metodo) {
+                alert('Completa todos los campos obligatorios');
+                return;
+            }
+
+            const paciente = pacientes.find(p => p.id == pac);
+            pagos.push({
+                id: Date.now(),
+                pacienteId: pac,
+                pacienteNombre: paciente.nombre,
+                monto: monto.toFixed(2),
+                fecha,
+                metodo,
+                observaciones: obs
+            });
+
+            localStorage.setItem('pagos', JSON.stringify(pagos));
+            limpiarFormPago();
+            actualizarTablas();
+            actualizarDashboard();
+            mostrarNotificacion('💳 Pago registrado', 'success');
+        }
+
+        function limpiarFormPago() {
+            document.getElementById('pago-pac').value = '';
+            document.getElementById('pago-monto').value = '';
+            document.getElementById('pago-metodo').value = '';
+            document.getElementById('pago-obs').value = '';
+        }
+
+        // ACTUALIZAR TABLAS
+        function actualizarTablas() {
+            // Pacientes
+            let html = '';
+            pacientes.forEach(p => {
+                html += `<tr><td>${p.nombre}</td><td>${p.dni}</td><td>${p.tel || '-'}</td><td>${p.os || '-'}</td><td><button class="btn-danger btn-small" onclick="eliminar('pacientes', ${p.id})">Eliminar</button></td></tr>`;
+            });
+            document.getElementById('corpoPacientes').innerHTML = html || '<tr><td colspan="5" style="text-align: center; color: #999;">No hay pacientes</td></tr>';
+
+            // Turnos
+            html = '';
+            turnos.forEach(t => {
+                html += `<tr><td>${t.fecha}</td><td>${t.hora}</td><td>${t.pacienteNombre}</td><td>${t.profesional}</td><td>${t.servicio}</td><td><span class="badge badge-info">${t.estado}</span></td><td><button class="btn-danger btn-small" onclick="eliminar('turnos', ${t.id})">Eliminar</button></td></tr>`;
+            });
+            document.getElementById('corpoTurnos').innerHTML = html || '<tr><td colspan="7" style="text-align: center; color: #999;">No hay turnos</td></tr>';
+
+            // Asistencias
+            html = '';
+            asistencias.forEach(a => {
+                html += `<tr><td>${a.fecha}</td><td>${a.pacienteNombre}</td><td>${a.duracion} min</td><td><span class="badge ${a.estado === 'Presente' ? 'badge-success' : 'badge-danger'}">${a.estado}</span></td><td>${a.notas || '-'}</td></tr>`;
+            });
+            document.getElementById('corpoAsistencias').innerHTML = html || '<tr><td colspan="5" style="text-align: center; color: #999;">No hay asistencias</td></tr>';
+
+            // Historias
+            html = '';
+            historias.forEach(h => {
+                html += `<tr><td>${h.pacienteNombre}</td><td>${h.profesional}</td><td>${h.fecha}</td><td>${h.archivo || '-'}</td><td><button class="btn-danger btn-small" onclick="eliminar('historias', ${h.id})">Eliminar</button></td></tr>`;
+            });
+            document.getElementById('corpoHistorias').innerHTML = html || '<tr><td colspan="5" style="text-align: center; color: #999;">No hay historias</td></tr>';
+
+            // Facturas
+            html = '';
+            facturas.forEach(f => {
+                html += `<tr><td>${f.periodo}</td><td>${f.pacienteNombre}</td><td>${f.sesiones}</td><td>$${f.total}</td><td><span class="badge badge-warning">${f.estado}</span></td><td><button class="btn-danger btn-small" onclick="eliminar('facturas', ${f.id})">Eliminar</button></td></tr>`;
+            });
+            document.getElementById('corpoFacturas').innerHTML = html || '<tr><td colspan="6" style="text-align: center; color: #999;">No hay facturas</td></tr>';
+
+            // Mensajes
+            html = '';
+            mensajes.forEach(m => {
+                html += `<tr><td>${m.fecha}</td><td>${m.pacienteNombre}</td><td>${m.tipo}</td><td>${m.canal}</td><td><span class="badge badge-success">${m.estado}</span></td></tr>`;
+            });
+            document.getElementById('corpoMensajes').innerHTML = html || '<tr><td colspan="5" style="text-align: center; color: #999;">No hay mensajes</td></tr>';
+
+            // Tareas
+            html = '';
+            tareas.forEach(t => {
+                html += `<tr><td>${t.pacienteNombre}</td><td>${t.tipo}</td><td>${t.descripcion.substring(0, 30)}...</td><td>${t.frecuencia}</td><td>${t.fecha}</td><td><span class="badge badge-success">${t.estado}</span></td></tr>`;
+            });
+            document.getElementById('corpoTareas').innerHTML = html || '<tr><td colspan="6" style="text-align: center; color: #999;">No hay tareas</td></tr>';
+
+            // Pagos
+            html = '';
+            pagos.forEach(p => {
+                html += `<tr><td>${p.fecha}</td><td>${p.pacienteNombre}</td><td>$${p.monto}</td><td>${p.metodo}</td><td>${p.observaciones || '-'}</td></tr>`;
+            });
+            document.getElementById('corpoPagos').innerHTML = html || '<tr><td colspan="5" style="text-align: center; color: #999;">No hay pagos</td></tr>';
+        }
+
+        // DASHBOARD
+        function actualizarDashboard() {
+            document.getElementById('stat-pac').textContent = pacientes.length;
+            document.getElementById('stat-turn').textContent = turnos.length;
+            document.getElementById('stat-asi').textContent = asistencias.length;
+            const totalPagos = pagos.reduce((s, p) => s + parseFloat(p.monto), 0);
+            document.getElementById('stat-pag').textContent = '$' + totalPagos.toFixed(2);
+            document.getElementById('stat-his').textContent = historias.length;
+            document.getElementById('stat-tar').textContent = tareas.length;
+        }
+
+        // UTILIDADES
+        function eliminar(tipo, id) {
+            if (!confirm('¿Confirmar eliminación?')) return;
+
+            if (tipo === 'pacientes') pacientes = pacientes.filter(p => p.id !== id);
+            else if (tipo === 'turnos') turnos = turnos.filter(t => t.id !== id);
+            else if (tipo === 'historias') historias = historias.filter(h => h.id !== id);
+            else if (tipo === 'facturas') facturas = facturas.filter(f => f.id !== id);
+
+            localStorage.setItem(tipo, JSON.stringify(eval(tipo)));
+            cargarSelects();
+            actualizarTablas();
+            actualizarDashboard();
+        }
+
+        function mostrarNotificacion(msg, tipo) {
+            const div = document.createElement('div');
+            div.className = `notification notification-${tipo}`;
+            div.textContent = msg;
+            div.style.position = 'fixed';
+            div.style.top = '20px';
+            div.style.right = '20px';
+            div.style.zIndex = '9999';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
