@@ -1,725 +1,201 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Juntos - Sistema Integral</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f8f9fa; color: #1a1a1a; }
+        
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #ec4899 0%, #06b6d4 100%); }
+        .login-box { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 100%; max-width: 400px; }
+        .login-box h1 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 24px; }
+        .login-box input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
+        .login-box button { width: 100%; background: linear-gradient(135deg, #ec4899 0%, #06b6d4 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 16px; }
+        
+        .app-container { display: flex; min-height: 100vh; }
+        nav { width: 280px; background: linear-gradient(135deg, #ec4899 0%, #06b6d4 100%); color: white; padding: 24px; position: fixed; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        nav button { background: rgba(255,255,255,0.1); border: none; color: #1a1a1a; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; border-left: 3px solid transparent; }
+        nav button.active { background: rgba(255,255,255,0.3); border-left-color: white; }
+        
+        main { flex: 1; margin-left: 280px; padding: 32px; overflow-y: auto; background: linear-gradient(180deg, #f8f9fa 0%, #f0f0f0 100%); }
+        
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+        th { padding: 16px; text-align: left; font-weight: 600; background: #f3f4f6; border-bottom: 2px solid #e5e7eb; }
+        td { padding: 16px; border-bottom: 1px solid #e5e7eb; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .btn-primary { background: #ec4899; color: white; }
+        .btn-secondary { background: #06b6d4; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .kpi { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .kpi-label { font-size: 12px; color: #999; margin-bottom: 8px; }
+        .kpi-value { font-size: 32px; font-weight: 700; }
+        
+        .hidden { display: none; }
+        .badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; color: white; }
+        .badge-success { background: #10b981; }
+        .badge-danger { background: #ef4444; }
+        .badge-warning { background: #f59e0b; }
+    </style>
 </head>
 <body>
-<x-dc>
-<helmet>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Club Juntos - Sistema con BD en Nube</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #f8f9fa; color: #1a1a1a; }
-    input, select, textarea { font-family: 'Inter', sans-serif; }
-  </style>
-</helmet>
-
-<sc-if value="{{ !usuarioAutenticado }}" hint-placeholder-val="{{ false }}">
-  <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #ec4899 0%, #06b6d4 100%);">
-    <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 100%; max-width: 400px;">
-      <div style="text-align: center; margin-bottom: 32px;">
-        <div style="font-size: 48px; margin-bottom: 16px;">🏃</div>
-        <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Club Juntos</h1>
-        <p style="color: #666; font-size: 14px;">Sistema con Base de Datos en Nube</p>
-      </div>
-      <div style="margin-bottom: 24px;">
-        <input type="text" id="loginUser" placeholder="Usuario" style="width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 12px;" />
-        <input type="password" id="loginPass" placeholder="Contraseña" style="width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; box-sizing: border-box;" />
-      </div>
-      <button onClick="{{ handleLogin }}" style="width: 100%; background: linear-gradient(135deg, #ec4899 0%, #06b6d4 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 16px;">Ingresar</button>
-      <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; font-size: 11px; color: #666; line-height: 1.6;">
-        <strong>Demo:</strong><br/>admin/12345 | juan/12345<br/><br/>
-        ⚠️ Necesitas Supabase para persistencia
-      </div>
-    </div>
-  </div>
-</sc-if>
-
-<sc-if value="{{ usuarioAutenticado }}" hint-placeholder-val="{{ true }}">
-  <div style="display: flex; min-height: 100vh;">
-    <nav style="width: 280px; background: linear-gradient(135deg, #ec4899 0%, #06b6d4 100%); color: white; padding: 24px; position: fixed; height: 100vh; overflow-y: auto; z-index: 1000; display: flex; flex-direction: column; gap: 24px;">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🏃</div>
-        <div>
-          <div style="font-weight: 700; font-size: 16px; color: #1a1a1a;">Club Juntos</div>
-          <div style="font-size: 11px; opacity: 0.7; color: #1a1a1a;">{{ usuarioNombre }}</div>
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <h1>🏃 Club Juntos</h1>
+            <input type="text" id="usuario" placeholder="Usuario" />
+            <input type="password" id="password" placeholder="Contraseña" />
+            <button onclick="login()">Ingresar</button>
+            <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; font-size: 12px; color: #666;">
+                <strong>Demo:</strong><br/>admin / 12345<br/>juan / 12345
+            </div>
         </div>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
-        <sc-for list="{{ menuItems }}" as="item" hint-placeholder-count="13">
-          <button onClick="{{ goToModule }}" data-module="{{ item.id }}" style="background: {{ currentModule === item.id ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)' }}; border: none; color: #1a1a1a; padding: 12px 16px; border-radius: 8px; text-align: left; cursor: pointer; font-weight: 600; font-size: 14px; border-left: 3px solid {{ currentModule === item.id ? '#fff' : 'transparent' }}; transition: all 0.3s;">{{ item.icon }} {{ item.name }}</button>
-        </sc-for>
-      </div>
-      <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; font-size: 11px; color: #1a1a1a; margin-bottom: 12px;">
-        {{ bdStatus }}
-      </div>
-      <button onClick="{{ handleLogout }}" style="width: 100%; background: rgba(255,255,255,0.2); color: #1a1a1a; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">🚪 Cerrar sesión</button>
-    </nav>
-    <main style="flex: 1; margin-left: 280px; padding: 32px; overflow-y: auto; background: linear-gradient(180deg, #f8f9fa 0%, #f0f0f0 100%);">
-      {{ moduleContent }}
-    </main>
-  </div>
-</sc-if>
-</x-dc>
-<script type="text/x-dc" data-dc-script>
-class Component extends DCLogic {
-  state = {
-    usuarioAutenticado: false,
-    usuarioTipo: null,
-    usuarioNombre: '',
-    usuarioId: null,
-    currentModule: 'dashboard',
-    bdStatus: '📡 Esperando configuración...',
-    supabase: null,
-    bdConfigured: false,
-    usuarios: [
-      { id: 1, usuario: 'admin', password: '12345', nombre: 'Administrador', tipo: 'admin' },
-      { id: 2, usuario: 'juan', password: '12345', nombre: 'Juan Terapista', tipo: 'terapista' },
-    ],
-    miembros: [
-      { id: 1, nombre: 'Juan Pérez', email: 'juan@email.com', plan: 'Premium', telefono: '555-1234', estado: 'Activo', fechaInscripcion: '2024-01-15' },
-      { id: 2, nombre: 'María García', email: 'maria@email.com', plan: 'Gold', telefono: '555-5678', estado: 'Activo', fechaInscripcion: '2024-02-20' },
-      { id: 3, nombre: 'Carlos López', email: 'carlos@email.com', plan: 'Básico', telefono: '555-9012', estado: 'Inactivo', fechaInscripcion: '2023-11-10' },
-    ],
-    membresias: [
-      { id: 1, nombre: 'Plan Básico', precio: 29.99, duracion: '1 mes', beneficios: 'Acceso a clases grupales', miembros: 45 },
-      { id: 2, nombre: 'Plan Gold', precio: 59.99, duracion: '1 mes', beneficios: 'Clases + Entrenamiento personal', miembros: 28 },
-      { id: 3, nombre: 'Plan Premium', precio: 99.99, duracion: '1 mes', beneficios: 'Acceso ilimitado + Nutrición', miembros: 15 },
-    ],
-    turnos: [
-      { id: 1, fecha: '2024-12-15', hora: '10:00', miembro: 'Juan Pérez', actividad: 'Yoga', terapista: 'Juan', duracion: 60, estado: 'Confirmado' },
-      { id: 2, fecha: '2024-12-15', hora: '11:30', miembro: 'María García', actividad: 'Pilates', terapista: 'Juan', duracion: 60, estado: 'Confirmado' },
-      { id: 3, fecha: '2024-12-16', hora: '14:00', miembro: 'Carlos López', actividad: 'Yoga', terapista: 'Juan', duracion: 60, estado: 'Pendiente' },
-    ],
-    asistencias: [
-      { id: 1, fecha: '2024-12-14', miembro: 'Juan Pérez', actividad: 'Yoga', entrada: '10:05', salida: '11:05', presente: true },
-      { id: 2, fecha: '2024-12-14', miembro: 'María García', actividad: 'Pilates', entrada: '', salida: '', presente: false },
-    ],
-    cancelaciones: [
-      { id: 1, fecha: '2024-12-13', miembro: 'Juan Pérez', turno: 'Yoga 10:00', razon: 'Motivo personal', horasAnticipacion: 3, permitida: true },
-      { id: 2, fecha: '2024-12-12', miembro: 'Carlos López', turno: 'Yoga 14:00', razon: 'Falta de aviso', horasAnticipacion: 0.5, permitida: false },
-    ],
-    legajos: [
-      { id: 1, miembro: 'Juan Pérez', dni: '12345678', fechaNacimiento: '1990-05-15', tipoSangre: 'O+', alergias: 'Penicilina', lesiones: 'Ninguna', observaciones: 'Excelente progreso' },
-      { id: 2, miembro: 'María García', dni: '87654321', fechaNacimiento: '1985-03-22', tipoSangre: 'A-', alergias: 'Ninguna', lesiones: 'Lesión en rodilla', observaciones: 'En recuperación' },
-    ],
-    materiales: [
-      { id: 1, nombre: 'Colchonetas Yoga', cantidad: 15, minimo: 5, precio: 45.00, estado: 'Normal' },
-      { id: 2, nombre: 'Pesas Ajustables', cantidad: 8, minimo: 10, precio: 120.00, estado: 'Bajo' },
-      { id: 3, nombre: 'Bandas Elásticas', cantidad: 2, minimo: 10, precio: 15.00, estado: 'Crítico' },
-      { id: 4, nombre: 'Botellas de Agua', cantidad: 30, minimo: 10, precio: 25.00, estado: 'Normal' },
-    ],
-    pagos: [
-      { id: 1, fecha: '2024-12-01', miembro: 'Juan Pérez', concepto: 'Membresía Premium', monto: 99.99, metodo: 'Tarjeta', estado: 'Pagado' },
-      { id: 2, fecha: '2024-12-05', miembro: 'María García', concepto: 'Membresía Gold', monto: 59.99, metodo: 'Transferencia', estado: 'Pagado' },
-      { id: 3, fecha: '2024-12-10', miembro: 'Carlos López', concepto: 'Membresía Básica', monto: 29.99, metodo: 'Efectivo', estado: 'Pendiente' },
-    ],
-    reuniones: [
-      { id: 1, fecha: '2024-12-15', hora: '09:00', asunto: 'Planificación trimestral', asistentes: ['Admin', 'Juan'], ubicacion: 'Sala 1', estado: 'Programada' },
-      { id: 2, fecha: '2024-12-20', hora: '15:00', asunto: 'Evaluación de desempeño', asistentes: ['Admin'], ubicacion: 'Sala 2', estado: 'Pendiente' },
-    ],
-  };
-
-  componentDidMount() {
-    this.initSupabase();
-    const stored = localStorage.getItem('clubJuntosData');
-    if (stored) {
-      try {
-        const data = JSON.parse(stored);
-        this.setState(data);
-      } catch (e) {}
-    }
-  }
-
-  initSupabase() {
-    const supabaseUrl = localStorage.getItem('supabaseUrl') || 'NO_CONFIGURADO';
-    const supabaseKey = localStorage.getItem('supabaseKey') || 'NO_CONFIGURADO';
+    </div>
     
-    if (supabaseUrl === 'NO_CONFIGURADO' || supabaseKey === 'NO_CONFIGURADO') {
-      this.setState({ 
-        bdStatus: '⚠️ No configurada. Ve a SETUP_BASE_DATOS_NUBE.md',
-        bdConfigured: false 
-      });
-      return;
-    }
-
-    try {
-      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-      this.setState({ 
-        supabase: supabase, 
-        bdConfigured: true,
-        bdStatus: '✅ BD conectada a la nube'
-      });
-      console.log('✅ Supabase conectado');
-    } catch (error) {
-      this.setState({ 
-        bdStatus: '❌ Error conectando BD',
-        bdConfigured: false 
-      });
-    }
-  }
-
-  saveToStorage() {
-    const dataToSave = {
-      miembros: this.state.miembros,
-      turnos: this.state.turnos,
-      asistencias: this.state.asistencias,
-      cancelaciones: this.state.cancelaciones,
-      legajos: this.state.legajos,
-      materiales: this.state.materiales,
-      pagos: this.state.pagos,
-      reuniones: this.state.reuniones,
-    };
-    localStorage.setItem('clubJuntosData', JSON.stringify(dataToSave));
-  }
-
-  handleLogin() {
-    const usuario = document.getElementById('loginUser').value;
-    const password = document.getElementById('loginPass').value;
-    const u = this.state.usuarios.find(x => x.usuario === usuario && x.password === password);
-    if (u) {
-      this.setState({ usuarioAutenticado: true, usuarioTipo: u.tipo, usuarioNombre: u.nombre, usuarioId: u.id });
-    } else {
-      alert('Credenciales inválidas');
-    }
-  }
-
-  handleLogout() {
-    this.setState({ usuarioAutenticado: false, usuarioTipo: null, usuarioNombre: '', usuarioId: null });
-  }
-
-  goToModule(e) {
-    this.setState({ currentModule: e.currentTarget.dataset.module });
-  }
-
-  addMiembro(nombre, email, plan, telefono) {
-    const newMiembro = {
-      id: Math.max(...this.state.miembros.map(m => m.id), 0) + 1,
-      nombre, email, plan, telefono,
-      estado: 'Activo',
-      fechaInscripcion: new Date().toISOString().split('T')[0],
-    };
-    this.setState(s => ({ miembros: [...s.miembros, newMiembro] }), () => this.saveToStorage());
-  }
-
-  deleteMiembro(id) {
-    this.setState(s => ({ miembros: s.miembros.filter(m => m.id !== id) }), () => this.saveToStorage());
-  }
-
-  addTurno(fecha, hora, miembro, actividad, duracion) {
-    const newTurno = {
-      id: Math.max(...this.state.turnos.map(t => t.id), 0) + 1,
-      fecha, hora, miembro, actividad, duracion,
-      terapista: this.state.usuarioNombre,
-      estado: 'Confirmado',
-    };
-    this.setState(s => ({ turnos: [...s.turnos, newTurno] }), () => this.saveToStorage());
-  }
-
-  deleteTurno(id) {
-    this.setState(s => ({ turnos: s.turnos.filter(t => t.id !== id) }), () => this.saveToStorage());
-  }
-
-  addAsistencia(fecha, miembro, actividad, entrada) {
-    const newAsistencia = {
-      id: Math.max(...this.state.asistencias.map(a => a.id), 0) + 1,
-      fecha, miembro, actividad, entrada, salida: '', presente: true,
-    };
-    this.setState(s => ({ asistencias: [...s.asistencias, newAsistencia] }), () => this.saveToStorage());
-  }
-
-  addPago(fecha, miembro, concepto, monto, metodo) {
-    const newPago = {
-      id: Math.max(...this.state.pagos.map(p => p.id), 0) + 1,
-      fecha, miembro, concepto, monto, metodo,
-      estado: 'Pagado',
-    };
-    this.setState(s => ({ pagos: [...s.pagos, newPago] }), () => this.saveToStorage());
-  }
-
-  deletePago(id) {
-    this.setState(s => ({ pagos: s.pagos.filter(p => p.id !== id) }), () => this.saveToStorage());
-  }
-
-  updateMaterial(id, nuevaCantidad) {
-    this.setState(s => ({
-      materiales: s.materiales.map(m => {
-        if (m.id === id) {
-          const estado = nuevaCantidad === 0 ? 'Crítico' : nuevaCantidad < m.minimo ? 'Bajo' : 'Normal';
-          return { ...m, cantidad: nuevaCantidad, estado };
+    <div id="appScreen" class="app-container hidden">
+        <nav>
+            <div style="font-weight: 700; font-size: 16px; color: #1a1a1a; margin-bottom: 16px;">Club Juntos</div>
+            <button class="nav-btn active" onclick="switchModule('dashboard', this)">📊 Dashboard</button>
+            <button class="nav-btn" onclick="switchModule('miembros', this)">👥 Miembros</button>
+            <button class="nav-btn" onclick="switchModule('membresias', this)">🎫 Membresías</button>
+            <button class="nav-btn" onclick="switchModule('turnos', this)">📅 Turnos</button>
+            <button class="nav-btn" onclick="switchModule('asistencia', this)">✅ Asistencia</button>
+            <button class="nav-btn" onclick="switchModule('pagos', this)">💳 Pagos</button>
+            <button class="nav-btn" onclick="switchModule('reportes', this)">📈 Reportes</button>
+            <div style="flex: 1;"></div>
+            <button class="nav-btn" onclick="logout()" style="background: rgba(255,255,255,0.2);">🚪 Cerrar</button>
+        </nav>
+        
+        <main>
+            <div id="dashboard" class="module">
+                <h1>📊 Dashboard</h1>
+                <div class="grid">
+                    <div class="kpi"><div class="kpi-label">👥 MIEMBROS</div><div class="kpi-value">3</div></div>
+                    <div class="kpi"><div class="kpi-label">📅 TURNOS HOY</div><div class="kpi-value">2</div></div>
+                    <div class="kpi"><div class="kpi-label">💰 INGRESOS</div><div class="kpi-value">$259.97</div></div>
+                </div>
+                <div class="card"><h3>✅ Sistema activo</h3><p>Bienvenido a Club Juntos</p></div>
+            </div>
+            
+            <div id="miembros" class="module hidden">
+                <h1>👥 Gestión de Miembros</h1>
+                <button class="btn btn-primary" onclick="alert('Agregar miembro')">+ Agregar</button>
+                <table style="margin-top: 20px;">
+                    <thead><tr><th>Nombre</th><th>Email</th><th>Plan</th><th>Estado</th></tr></thead>
+                    <tbody><tr><td>Juan Pérez</td><td>juan@email.com</td><td><span class="badge badge-success">Premium</span></td><td><span class="badge badge-success">Activo</span></td></tr></tbody>
+                </table>
+            </div>
+            
+            <div id="membresias" class="module hidden">
+                <h1>🎫 Planes de Membresía</h1>
+                <div class="grid">
+                    <div class="card"><h3>Plan Básico</h3><div style="font-size: 28px; color: #ec4899; margin: 8px 0;">$29.99</div></div>
+                    <div class="card"><h3>Plan Gold</h3><div style="font-size: 28px; color: #ec4899; margin: 8px 0;">$59.99</div></div>
+                    <div class="card"><h3>Plan Premium</h3><div style="font-size: 28px; color: #ec4899; margin: 8px 0;">$99.99</div></div>
+                </div>
+            </div>
+            
+            <div id="turnos" class="module hidden">
+                <h1>📅 Gestión de Turnos</h1>
+                <button class="btn btn-secondary" onclick="alert('Agendar turno')">+ Agendar</button>
+                <table style="margin-top: 20px;">
+                    <thead><tr><th>Fecha</th><th>Hora</th><th>Miembro</th><th>Actividad</th><th>Estado</th></tr></thead>
+                    <tbody><tr><td>2024-12-15</td><td>10:00</td><td>Juan Pérez</td><td>Yoga</td><td><span class="badge badge-success">Confirmado</span></td></tr></tbody>
+                </table>
+            </div>
+            
+            <div id="asistencia" class="module hidden">
+                <h1>✅ Control de Asistencia</h1>
+                <button class="btn btn-primary" onclick="alert('Registrar asistencia')">+ Registrar</button>
+                <table style="margin-top: 20px;">
+                    <thead><tr><th>Fecha</th><th>Miembro</th><th>Actividad</th><th>Entrada</th><th>Estado</th></tr></thead>
+                    <tbody><tr><td>2024-12-14</td><td>Juan Pérez</td><td>Yoga</td><td>10:05</td><td><span class="badge badge-success">Presente</span></td></tr></tbody>
+                </table>
+            </div>
+            
+            <div id="pagos" class="module hidden">
+                <h1>💳 Gestión de Pagos</h1>
+                <div class="grid">
+                    <div class="kpi"><div class="kpi-label">PAGADO</div><div class="kpi-value" style="color: #10b981;">$259.97</div></div>
+                    <div class="kpi"><div class="kpi-label">PENDIENTE</div><div class="kpi-value" style="color: #f59e0b;">$29.99</div></div>
+                </div>
+                <button class="btn btn-primary" onclick="alert('Registrar pago')">+ Registrar Pago</button>
+                <table style="margin-top: 20px;">
+                    <thead><tr><th>Fecha</th><th>Miembro</th><th>Concepto</th><th>Monto</th><th>Estado</th></tr></thead>
+                    <tbody><tr><td>2024-12-01</td><td>Juan Pérez</td><td>Membresía Premium</td><td>$99.99</td><td><span class="badge badge-success">Pagado</span></td></tr></tbody>
+                </table>
+            </div>
+            
+            <div id="reportes" class="module hidden">
+                <h1>📈 Reportes & Análisis</h1>
+                <div class="grid">
+                    <div class="kpi"><div class="kpi-label">INGRESOS</div><div class="kpi-value" style="color: #10b981;">$259.97</div></div>
+                    <div class="kpi"><div class="kpi-label">PROMEDIO</div><div class="kpi-value" style="color: #06b6d4;">$86.65</div></div>
+                    <div class="kpi"><div class="kpi-label">RENTABILIDAD</div><div class="kpi-value" style="color: #fbbf24;">87.3%</div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        const usuarios = [
+            { usuario: 'admin', password: '12345', nombre: 'Admin' },
+            { usuario: 'juan', password: '12345', nombre: 'Juan' }
+        ];
+        
+        function login() {
+            const u = document.getElementById('usuario').value;
+            const p = document.getElementById('password').value;
+            const user = usuarios.find(x => x.usuario === u && x.password === p);
+            if (user) {
+                localStorage.setItem('user', JSON.stringify(user));
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+            } else {
+                alert('Credenciales inválidas');
+            }
         }
-        return m;
-      })
-    }), () => this.saveToStorage());
-  }
-
-  renderDashboard() {
-    const totalIngresos = this.state.pagos.filter(p => p.estado === 'Pagado').reduce((a, p) => a + p.monto, 0);
-    const miembrosActivos = this.state.miembros.filter(m => m.estado === 'Activo').length;
-    const turnosHoy = this.state.turnos.filter(t => t.fecha === new Date().toISOString().split('T')[0]).length;
-
-    return React.createElement('div', null,
-      React.createElement('h1', { style: { fontSize: '28px', fontWeight: '700', marginBottom: '24px' } }, '📊 Dashboard'),
-      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' } },
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '8px' } }, '👥 MIEMBROS ACTIVOS'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#ec4899' } }, miembrosActivos)
-        ),
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '8px' } }, '📅 TURNOS HOY'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#06b6d4' } }, turnosHoy)
-        ),
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '8px' } }, '💰 INGRESOS PAGADOS'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#fbbf24' } }, '$' + totalIngresos.toFixed(2))
-        ),
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '8px' } }, '📦 STOCK CRÍTICO'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#ef4444' } }, this.state.materiales.filter(m => m.estado === 'Crítico').length)
-        )
-      ),
-      React.createElement('div', { style: { background: '#fffbeb', padding: '16px', borderRadius: '8px', marginTop: '24px', borderLeft: '4px solid #f59e0b' } },
-        React.createElement('div', { style: { fontSize: '12px', fontWeight: '600', color: '#92400e', marginBottom: '4px' } }, '💡 Configuración Supabase'),
-        React.createElement('div', { style: { fontSize: '12px', color: '#78350f' } }, this.state.bdStatus),
-        React.createElement('div', { style: { fontSize: '11px', color: '#92400e', marginTop: '8px' } }, this.state.bdConfigured ? '✅ Datos se guardan permanentemente en la nube' : '⚠️ Los datos solo se guardan en el navegador. Ve a SETUP_BASE_DATOS_NUBE.md')
-      )
-    );
-  }
-
-  renderMiembros() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '👥 Gestión de Miembros'),
-      React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('button', { onClick: () => {
-          const nombre = prompt('Nombre:');
-          const email = prompt('Email:');
-          const plan = prompt('Plan (Básico/Gold/Premium):');
-          const telefono = prompt('Teléfono:');
-          if (nombre && email && plan && telefono) this.addMiembro(nombre, email, plan, telefono);
-        }, style: { background: '#ec4899', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' } }, '+ Agregar Miembro')
-      ),
-      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('thead', null,
-          React.createElement('tr', { style: { background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' } },
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Nombre'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Email'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Plan'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Estado'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Acciones')
-          )
-        ),
-        React.createElement('tbody', null,
-          this.state.miembros.map(m => React.createElement('tr', { key: m.id, style: { borderBottom: '1px solid #e5e7eb' } },
-            React.createElement('td', { style: { padding: '16px' } }, m.nombre),
-            React.createElement('td', { style: { padding: '16px' } }, m.email),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('span', { style: { background: '#ec4899', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' } }, m.plan)),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('span', { style: { background: m.estado === 'Activo' ? '#10b981' : '#999', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' } }, m.estado)),
-            React.createElement('td', { style: { padding: '16px', display: 'flex', gap: '8px' } },
-              React.createElement('button', { style: { background: '#06b6d4', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' } }, 'Ver'),
-              React.createElement('button', { onClick: () => this.deleteMiembro(m.id), style: { background: '#ef4444', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' } }, 'Eliminar')
-            )
-          ))
-        )
-      )
-    );
-  }
-
-  renderMembresias() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '🎫 Planes de Membresía'),
-      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' } },
-        this.state.membresias.map(m => React.createElement('div', { key: m.id, style: { background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('h3', { style: { fontSize: '18px', fontWeight: '700', marginBottom: '8px' } }, m.nombre),
-          React.createElement('div', { style: { fontSize: '28px', fontWeight: '700', color: '#ec4899', marginBottom: '8px' } }, '$' + m.precio),
-          React.createElement('p', { style: { color: '#666', fontSize: '14px', marginBottom: '12px' } }, m.beneficios),
-          React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '12px' } }, '👥 ' + m.miembros + ' miembros activos'),
-          React.createElement('button', { style: { width: '100%', background: '#06b6d4', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' } }, 'Editar Plan')
-        ))
-      )
-    );
-  }
-
-  renderTurnos() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '📅 Gestión de Turnos'),
-      React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('button', { onClick: () => {
-          const fecha = prompt('Fecha (YYYY-MM-DD):');
-          const hora = prompt('Hora (HH:MM):');
-          const miembro = prompt('Miembro:');
-          const actividad = prompt('Actividad:');
-          const duracion = parseInt(prompt('Duración (minutos):'));
-          if (fecha && hora && miembro && actividad && duracion) this.addTurno(fecha, hora, miembro, actividad, duracion);
-        }, style: { background: '#06b6d4', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' } }, '+ Agendar Turno')
-      ),
-      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('thead', null,
-          React.createElement('tr', { style: { background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' } },
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Fecha'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Hora'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Miembro'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Actividad'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Duración'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Estado'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Acción')
-          )
-        ),
-        React.createElement('tbody', null,
-          this.state.turnos.map(t => React.createElement('tr', { key: t.id, style: { borderBottom: '1px solid #e5e7eb' } },
-            React.createElement('td', { style: { padding: '16px' } }, t.fecha),
-            React.createElement('td', { style: { padding: '16px' } }, t.hora),
-            React.createElement('td', { style: { padding: '16px' } }, t.miembro),
-            React.createElement('td', { style: { padding: '16px' } }, t.actividad),
-            React.createElement('td', { style: { padding: '16px' } }, t.duracion + ' min'),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('span', { style: { background: t.estado === 'Confirmado' ? '#10b981' : '#f59e0b', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' } }, t.estado)),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('button', { onClick: () => this.deleteTurno(t.id), style: { background: '#ef4444', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' } }, 'Eliminar'))
-          ))
-        )
-      )
-    );
-  }
-
-  renderAsistencia() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '✅ Control de Asistencia'),
-      React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('button', { onClick: () => {
-          const fecha = prompt('Fecha:');
-          const miembro = prompt('Miembro:');
-          const actividad = prompt('Actividad:');
-          const entrada = prompt('Hora entrada:');
-          if (fecha && miembro && actividad && entrada) this.addAsistencia(fecha, miembro, actividad, entrada);
-        }, style: { background: '#10b981', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' } }, '+ Registrar Asistencia')
-      ),
-      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('thead', null,
-          React.createElement('tr', { style: { background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' } },
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Fecha'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Miembro'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Actividad'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Entrada'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Salida'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Estado')
-          )
-        ),
-        React.createElement('tbody', null,
-          this.state.asistencias.map(a => React.createElement('tr', { key: a.id, style: { borderBottom: '1px solid #e5e7eb' } },
-            React.createElement('td', { style: { padding: '16px' } }, a.fecha),
-            React.createElement('td', { style: { padding: '16px' } }, a.miembro),
-            React.createElement('td', { style: { padding: '16px' } }, a.actividad),
-            React.createElement('td', { style: { padding: '16px' } }, a.entrada),
-            React.createElement('td', { style: { padding: '16px' } }, a.salida),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('span', { style: { background: a.presente ? '#10b981' : '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' } }, a.presente ? 'Presente' : 'Ausente'))
-          ))
-        )
-      )
-    );
-  }
-
-  renderCancelaciones() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '❌ Cancelaciones de Turnos'),
-      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('thead', null,
-          React.createElement('tr', { style: { background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' } },
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Fecha'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Miembro'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Turno'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Razón'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Horas Aviso'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Estado')
-          )
-        ),
-        React.createElement('tbody', null,
-          this.state.cancelaciones.map(c => React.createElement('tr', { key: c.id, style: { borderBottom: '1px solid #e5e7eb' } },
-            React.createElement('td', { style: { padding: '16px' } }, c.fecha),
-            React.createElement('td', { style: { padding: '16px' } }, c.miembro),
-            React.createElement('td', { style: { padding: '16px' } }, c.turno),
-            React.createElement('td', { style: { padding: '16px' } }, c.razon),
-            React.createElement('td', { style: { padding: '16px' } }, c.horasAnticipacion + 'h'),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('span', { style: { background: c.permitida ? '#10b981' : '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' } }, c.permitida ? 'Permitida' : 'No permitida'))
-          ))
-        )
-      )
-    );
-  }
-
-  renderLegajos() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '📋 Legajos Médicos'),
-      React.createElement('div', { style: { display: 'grid', gap: '16px' } },
-        this.state.legajos.map(l => React.createElement('div', { key: l.id, style: { background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('h3', { style: { fontSize: '18px', fontWeight: '700', marginBottom: '16px' } }, l.miembro),
-          React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' } },
-            React.createElement('div', null,
-              React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '4px' } }, 'DNI'),
-              React.createElement('div', { style: { fontSize: '14px', fontWeight: '600' } }, l.dni)
-            ),
-            React.createElement('div', null,
-              React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '4px' } }, 'Fecha Nacimiento'),
-              React.createElement('div', { style: { fontSize: '14px', fontWeight: '600' } }, l.fechaNacimiento)
-            ),
-            React.createElement('div', null,
-              React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '4px' } }, 'Tipo Sangre'),
-              React.createElement('div', { style: { fontSize: '14px', fontWeight: '600' } }, l.tipoSangre)
-            ),
-            React.createElement('div', null,
-              React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '4px' } }, 'Alergias'),
-              React.createElement('div', { style: { fontSize: '14px', fontWeight: '600' } }, l.alergias)
-            ),
-            React.createElement('div', null,
-              React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '4px' } }, 'Lesiones'),
-              React.createElement('div', { style: { fontSize: '14px', fontWeight: '600' } }, l.lesiones)
-            )
-          ),
-          React.createElement('div', { style: { marginTop: '16px', padding: '12px', background: '#f3f4f6', borderRadius: '8px' } },
-            React.createElement('div', { style: { fontSize: '12px', color: '#999', marginBottom: '4px' } }, 'Observaciones'),
-            React.createElement('div', { style: { fontSize: '14px' } }, l.observaciones)
-          )
-        ))
-      )
-    );
-  }
-
-  renderMateriales() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '📦 Gestión de Materiales'),
-      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('thead', null,
-          React.createElement('tr', { style: { background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' } },
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Material'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Stock'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Mínimo'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Precio'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Total'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Estado')
-          )
-        ),
-        React.createElement('tbody', null,
-          this.state.materiales.map(m => React.createElement('tr', { key: m.id, style: { borderBottom: '1px solid #e5e7eb' } },
-            React.createElement('td', { style: { padding: '16px' } }, m.nombre),
-            React.createElement('td', { style: { padding: '16px', fontWeight: '600' } }, m.cantidad),
-            React.createElement('td', { style: { padding: '16px' } }, m.minimo),
-            React.createElement('td', { style: { padding: '16px' } }, '$' + m.precio.toFixed(2)),
-            React.createElement('td', { style: { padding: '16px', fontWeight: '600' } }, '$' + (m.cantidad * m.precio).toFixed(2)),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('span', { style: { background: m.estado === 'Normal' ? '#10b981' : m.estado === 'Bajo' ? '#f59e0b' : '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' } }, m.estado))
-          ))
-        )
-      )
-    );
-  }
-
-  renderPagos() {
-    const totalPagado = this.state.pagos.filter(p => p.estado === 'Pagado').reduce((a, p) => a + p.monto, 0);
-    const totalPendiente = this.state.pagos.filter(p => p.estado === 'Pendiente').reduce((a, p) => a + p.monto, 0);
-
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '💳 Gestión de Pagos'),
-      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' } },
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999' } }, 'TOTAL PAGADO'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#10b981' } }, '$' + totalPagado.toFixed(2))
-        ),
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999' } }, 'PENDIENTE'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#f59e0b' } }, '$' + totalPendiente.toFixed(2))
-        )
-      ),
-      React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('button', { onClick: () => {
-          const fecha = prompt('Fecha:');
-          const miembro = prompt('Miembro:');
-          const concepto = prompt('Concepto:');
-          const monto = parseFloat(prompt('Monto:'));
-          const metodo = prompt('Método (Tarjeta/Transferencia/Efectivo):');
-          if (fecha && miembro && concepto && monto && metodo) this.addPago(fecha, miembro, concepto, monto, metodo);
-        }, style: { background: '#10b981', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' } }, '+ Registrar Pago')
-      ),
-      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('thead', null,
-          React.createElement('tr', { style: { background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' } },
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Fecha'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Miembro'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Concepto'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Monto'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Método'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Estado'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Acción')
-          )
-        ),
-        React.createElement('tbody', null,
-          this.state.pagos.map(p => React.createElement('tr', { key: p.id, style: { borderBottom: '1px solid #e5e7eb' } },
-            React.createElement('td', { style: { padding: '16px' } }, p.fecha),
-            React.createElement('td', { style: { padding: '16px' } }, p.miembro),
-            React.createElement('td', { style: { padding: '16px' } }, p.concepto),
-            React.createElement('td', { style: { padding: '16px', fontWeight: '600' } }, '$' + p.monto.toFixed(2)),
-            React.createElement('td', { style: { padding: '16px' } }, p.metodo),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('span', { style: { background: p.estado === 'Pagado' ? '#10b981' : '#f59e0b', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' } }, p.estado)),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('button', { onClick: () => this.deletePago(p.id), style: { background: '#ef4444', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' } }, 'Eliminar'))
-          ))
-        )
-      )
-    );
-  }
-
-  renderReuniones() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '🤝 Reuniones'),
-      React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('thead', null,
-          React.createElement('tr', { style: { background: '#f3f4f6', borderBottom: '2px solid #e5e7eb' } },
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Fecha'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Hora'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Asunto'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Ubicación'),
-            React.createElement('th', { style: { padding: '16px', textAlign: 'left', fontWeight: '600' } }, 'Estado')
-          )
-        ),
-        React.createElement('tbody', null,
-          this.state.reuniones.map(r => React.createElement('tr', { key: r.id, style: { borderBottom: '1px solid #e5e7eb' } },
-            React.createElement('td', { style: { padding: '16px' } }, r.fecha),
-            React.createElement('td', { style: { padding: '16px' } }, r.hora),
-            React.createElement('td', { style: { padding: '16px' } }, r.asunto),
-            React.createElement('td', { style: { padding: '16px' } }, r.ubicacion),
-            React.createElement('td', { style: { padding: '16px' } }, React.createElement('span', { style: { background: r.estado === 'Programada' ? '#10b981' : '#f59e0b', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' } }, r.estado))
-          ))
-        )
-      )
-    );
-  }
-
-  renderReportes() {
-    const totalIngresos = this.state.pagos.filter(p => p.estado === 'Pagado').reduce((a, p) => a + p.monto, 0);
-    const promedioPorMiembro = (totalIngresos / this.state.miembros.length).toFixed(2);
-    const rentabilidad = ((totalIngresos - (this.state.materiales.reduce((a, m) => a + m.cantidad * m.precio, 0) * 0.1)) / totalIngresos * 100).toFixed(1);
-
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '📈 Reportes & Análisis'),
-      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' } },
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999' } }, 'INGRESOS TOTALES'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#10b981' } }, '$' + totalIngresos.toFixed(2))
-        ),
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999' } }, 'PROMEDIO/MIEMBRO'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#06b6d4' } }, '$' + promedioPorMiembro)
-        ),
-        React.createElement('div', { style: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-          React.createElement('div', { style: { fontSize: '12px', color: '#999' } }, 'RENTABILIDAD'),
-          React.createElement('div', { style: { fontSize: '32px', fontWeight: '700', color: '#fbbf24' } }, rentabilidad + '%')
-        )
-      )
-    );
-  }
-
-  renderBusqueda() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '🔍 Búsqueda Avanzada'),
-      React.createElement('input', { type: 'text', id: 'searchInput', placeholder: 'Buscar miembros, turnos, pagos...', style: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px', marginBottom: '16px' } }),
-      React.createElement('p', { style: { color: '#666' } }, 'Búsqueda global en todos los módulos')
-    );
-  }
-
-  renderConfiguracion() {
-    return React.createElement('div', null,
-      React.createElement('h2', { style: { fontSize: '24px', fontWeight: '700', marginBottom: '24px' } }, '⚙️ Configuración'),
-      React.createElement('div', { style: { background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '24px' } },
-        React.createElement('h3', { style: { fontSize: '16px', fontWeight: '600', marginBottom: '16px' } }, '🌐 Configurar Base de Datos en Nube'),
-        React.createElement('div', { style: { marginBottom: '16px' } },
-          React.createElement('label', { style: { display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' } }, 'URL Supabase'),
-          React.createElement('input', { type: 'text', id: 'supabaseUrl', placeholder: 'https://xxxxx.supabase.co', style: { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px' } })
-        ),
-        React.createElement('div', { style: { marginBottom: '16px' } },
-          React.createElement('label', { style: { display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' } }, 'Anon Key'),
-          React.createElement('input', { type: 'text', id: 'supabaseKey', placeholder: 'Tu anon key de Supabase', style: { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px' } })
-        ),
-        React.createElement('button', { onClick: () => {
-          const url = document.getElementById('supabaseUrl').value;
-          const key = document.getElementById('supabaseKey').value;
-          if (url && key) {
-            localStorage.setItem('supabaseUrl', url);
-            localStorage.setItem('supabaseKey', key);
-            this.initSupabase();
-            alert('✅ Credenciales guardadas. La BD está lista.');
-          } else {
-            alert('❌ Completa los campos');
-          }
-        }, style: { background: '#10b981', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', marginTop: '16px' } }, '✅ Guardar Configuración')
-      ),
-      React.createElement('div', { style: { background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } },
-        React.createElement('h3', { style: { fontSize: '16px', fontWeight: '600', marginBottom: '16px' } }, '🏢 Datos del Club'),
-        React.createElement('div', { style: { marginBottom: '16px' } },
-          React.createElement('label', { style: { display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' } }, '🏢 Nombre del Club'),
-          React.createElement('input', { type: 'text', defaultValue: 'Club Juntos', style: { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e5e7eb' } })
-        ),
-        React.createElement('div', { style: { marginBottom: '16px' } },
-          React.createElement('label', { style: { display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' } }, '📧 Email de Contacto'),
-          React.createElement('input', { type: 'email', defaultValue: 'info@clubjuntos.com', style: { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e5e7eb' } })
-        ),
-        React.createElement('div', { style: { marginBottom: '16px' } },
-          React.createElement('label', { style: { display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' } }, '📱 Teléfono'),
-          React.createElement('input', { type: 'tel', defaultValue: '123-456-7890', style: { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e5e7eb' } })
-        ),
-        React.createElement('button', { style: { background: '#06b6d4', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', marginTop: '16px' } }, 'Guardar Cambios')
-      )
-    );
-  }
-
-  renderModule() {
-    switch(this.state.currentModule) {
-      case 'dashboard': return this.renderDashboard();
-      case 'miembros': return this.renderMiembros();
-      case 'membresias': return this.renderMembresias();
-      case 'turnos': return this.renderTurnos();
-      case 'asistencia': return this.renderAsistencia();
-      case 'cancelaciones': return this.renderCancelaciones();
-      case 'legajos': return this.renderLegajos();
-      case 'materiales': return this.renderMateriales();
-      case 'pagos': return this.renderPagos();
-      case 'reuniones': return this.renderReuniones();
-      case 'reportes': return this.renderReportes();
-      case 'busqueda': return this.renderBusqueda();
-      case 'configuracion': return this.renderConfiguracion();
-      default: return this.renderDashboard();
-    }
-  }
-
-  renderVals() {
-    const menuItems = [
-      { id: 'dashboard', name: 'Dashboard', icon: '📊' },
-      { id: 'miembros', name: 'Miembros', icon: '👥' },
-      { id: 'membresias', name: 'Membresías', icon: '🎫' },
-      { id: 'turnos', name: 'Turnos', icon: '📅' },
-      { id: 'asistencia', name: 'Asistencia', icon: '✅' },
-      { id: 'cancelaciones', name: 'Cancelaciones', icon: '❌' },
-      { id: 'legajos', name: 'Legajos', icon: '📋' },
-      { id: 'materiales', name: 'Materiales', icon: '📦' },
-      { id: 'pagos', name: 'Pagos', icon: '💳' },
-      { id: 'reuniones', name: 'Reuniones', icon: '🤝' },
-      { id: 'reportes', name: 'Reportes', icon: '📈' },
-      { id: 'busqueda', name: 'Búsqueda', icon: '🔍' },
-      { id: 'configuracion', name: 'Configuración', icon: '⚙️' },
-    ];
-
-    return {
-      usuarioAutenticado: this.state.usuarioAutenticado,
-      usuarioNombre: this.state.usuarioNombre,
-      bdStatus: this.state.bdStatus,
-      menuItems: menuItems,
-      currentModule: this.state.currentModule,
-      moduleContent: this.renderModule(),
-      handleLogin: (e) => this.handleLogin(),
-      handleLogout: () => this.handleLogout(),
-      goToModule: (e) => this.goToModule(e),
-    };
-  }
-}
-</script>
+        
+        function logout() {
+            localStorage.removeItem('user');
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+        
+        function switchModule(id, btn) {
+            document.querySelectorAll('.module').forEach(m => m.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('user')) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
+Pasos para usar:
+
+Copia todo el código
+Ve a tu repositorio GitHub
+Abre o crea el archivo index.html
+Pega el código
+Commit y Push
+Listo en: tuusername.github.io/turmero/
+¡Funciona en vivo! 🚀
+
+
+Design System
+
+
+
+in
